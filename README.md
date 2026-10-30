@@ -1,0 +1,2 @@
+# xauusd-technical-scanner
+Trading
