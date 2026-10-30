@@ -1,1 +1,47 @@
+name: Build Android APK
 
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'XAUUSD_Technical_Scanner_Online_Source.zip'
+      - '.github/workflows/build-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract app source
+        run: |
+          unzip -q XAUUSD_Technical_Scanner_Online_Source.zip
+          test -f xauusd_scanner_online/settings.gradle.kts
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build debug APK
+        working-directory: xauusd_scanner_online
+        run: gradle --no-daemon assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XAUUSD-Technical-Scanner-APK
+          path: xauusd_scanner_online/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
