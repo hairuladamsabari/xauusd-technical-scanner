@@ -13,28 +13,31 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Extract app source
         run: |
           unzip -q XAUUSD_Technical_Scanner_Online_Source.zip
           test -f xauusd_scanner_online/settings.gradle.kts
 
-      - uses: actions/setup-java@v4
+      - name: Set up Java
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Accept Android SDK licences
-        run: yes | sdkmanager --licenses
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-35 build-tools;35.0.0'
+          accept-android-sdk-licenses: true
 
-      - name: Install Android SDK
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
@@ -42,7 +45,8 @@ jobs:
         working-directory: xauusd_scanner_online
         run: gradle --no-daemon assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: XAUUSD-Technical-Scanner-APK
           path: xauusd_scanner_online/app/build/outputs/apk/debug/app-debug.apk
